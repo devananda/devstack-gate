@@ -22,7 +22,7 @@ GATE_SCRIPT_DIR=$(cd $(dirname "$0") && pwd)
 cd $WORKSPACE
 
 if [[ ! -e devstack ]]; then
-    git clone https://review.openstack.org/p/openstack-dev/devstack
+    git clone https://github.com/openstack-dev/devstack
 fi
 cd devstack
 git remote update

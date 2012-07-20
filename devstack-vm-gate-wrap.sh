@@ -19,7 +19,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROJECTS="openstack-dev/devstack openstack/nova openstack/glance openstack/keystone openstack/python-novaclient openstack/python-keystoneclient openstack/python-quantumclient openstack/python-glanceclient openstack/python-openstackclient openstack/horizon openstack/tempest openstack/cinder openstack/python-cinderclient"
+PROJECTS="devananda/devstack devananda/devstack-gate devananda/nova openstack/glance openstack/keystone openstack/python-novaclient openstack/python-keystoneclient openstack/python-quantumclient openstack/python-glanceclient openstack/python-openstackclient openstack/horizon openstack/tempest openstack/cinder openstack/python-cinderclient"
 
 # Set to 1 to run the Tempest test suite
 export DEVSTACK_GATE_TEMPEST=${DEVSTACK_GATE_TEMPEST:-0}
@@ -72,7 +72,7 @@ function setup_workspace {
       SHORT_PROJECT=`basename $GERRIT_PROJECT`
       if [[ ! -e $SHORT_PROJECT ]]; then
           echo "  Need to clone $SHORT_PROJECT"
-          git clone https://review.openstack.org/p/$GERRIT_PROJECT
+          git clone https://github.com/$GERRIT_PROJECT
       fi
       cd $SHORT_PROJECT
 
@@ -85,8 +85,6 @@ function setup_workspace {
       if ! git branch -a |grep remotes/origin/$GERRIT_BRANCH>/dev/null; then
           GERRIT_BRANCH=master
       fi
-
-      /usr/local/jenkins/slave_scripts/gerrit-git-prep.sh review.openstack.org
 
       cd $DEST
     done
@@ -144,6 +142,11 @@ function setup_host {
     chmod 0440 $TEMPFILE
     sudo chown root:root $TEMPFILE
     sudo mv $TEMPFILE /etc/sudoers.d/50_stack_sh
+
+    # If we will be testing OpenVZ, make sure stack is a member of the vz group
+    if [ "$DEVSTACK_GATE_VIRT_DRIVER" == "openvz" ]; then
+        sudo usermod -a -G vz stack
+    fi
 
     # Disable detailed logging as we return to the main script
     set +o xtrace

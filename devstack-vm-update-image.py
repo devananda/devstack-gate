@@ -36,7 +36,7 @@ DEVSTACK_GATE_PREFIX = os.environ.get('DEVSTACK_GATE_PREFIX', '')
 DEVSTACK = os.path.join(WORKSPACE, 'devstack')
 PROVIDER_NAME = sys.argv[1]
 
-PROJECTS = ['openstack/nova',
+PROJECTS = ['devananda/nova',
             'openstack/glance',
             'openstack/keystone',
             'openstack/horizon',
@@ -48,8 +48,8 @@ PROJECTS = ['openstack/nova',
             'openstack/python-novaclient',
             'openstack/python-openstackclient',
             'openstack/python-quantumclient',
-            'openstack-dev/devstack',
-            'openstack-ci/devstack-gate']
+            'devananda/devstack',
+            'devananda/devstack-gate']
 
 
 def run_local(cmd, status=False, cwd='.', env={}):
@@ -150,8 +150,6 @@ def bootstrap_server(provider, server, admin_pass, key):
         raise Exception("Unable to log in via SSH")
 
     # hpcloud can't reliably set the hostname
-    gerrit_url = 'https://review.openstack.org/p/openstack/' \
-                 'openstack-ci-puppet.git'
     client.ssh("set hostname", "sudo hostname %s" % server.name)
     client.ssh("update apt cache", "sudo apt-get update")
     client.ssh("upgrading system packages",
@@ -162,11 +160,12 @@ def bootstrap_server(provider, server, admin_pass, key):
                'sudo DEBIAN_FRONTEND=noninteractive apt-get '
                '--option "Dpkg::Options::=--force-confold"'
                ' --assume-yes install git puppet')
+    # get my puppet repo so that my SSH key is added to jenkins
     client.ssh("clone puppret repo",
-               "sudo git clone %s /root/openstack-ci-puppet" % gerrit_url)
+               "sudo git clone git://github.com/devananda/openstack-ci-puppet.git /root/openstack-ci-puppet")
     client.ssh("run puppet",
                "sudo puppet apply "
-               "--modulepath=/root/openstack-ci-puppet/modules"
+               "--modulepath=/root/openstack-ci-puppet/modules "
                "/root/openstack-ci-puppet/manifests/site.pp")
 
 
@@ -203,7 +202,7 @@ def configure_server(server, branches):
                            'ls ~/cache/files/%s' % fname)
             except:
                 client.ssh('download image %s' % fname,
-                    'wget -c %s -O ~/cache/files/%s' % (url, fname))
+                    'wget -nv -c %s -O ~/cache/files/%s' % (url, fname))
 
     client.ssh('clear workspace', 'rm -rf ~/workspace-cache')
     client.ssh('make workspace', 'mkdir -p ~/workspace-cache')
@@ -211,7 +210,7 @@ def configure_server(server, branches):
         sp = project.split('/')[0]
         client.ssh('clone %s' % project,
             'cd ~/workspace-cache && '
-            'git clone https://review.openstack.org/p/%s' % project)
+            'git clone https://github.com/%s' % project)
 
     script = os.environ.get('DEVSTACK_GATE_CUSTOM_SCRIPT', '')
     if script and os.path.isfile(script):

@@ -21,7 +21,11 @@
 
 set -o errexit
 
+cd $DEST/nova
+git checkout merge_openvz_support
+
 cd $DEST/devstack
+git checkout add-openvz-support
 
 ENABLED_SERVICES=g-api,g-reg,key,n-api,n-crt,n-obj,n-cpu,n-net,n-sch,horizon,mysql,rabbit
 
@@ -64,6 +68,8 @@ if [ "$DEVSTACK_GATE_VIRT_DRIVER" == "openvz" ]; then
 SKIP_EXERCISES=${SKIP_EXERCISES},volumes
 DEFAULT_INSTANCE_TYPE=m1.small
 DEFAULT_INSTANCE_USER=root
+NOVA_REPO=https://github.com/devananda/nova.git
+NOVA_BRANCH=merge_openvz_support
 EOF
 
    cat <<EOF >>exerciserc
@@ -84,11 +90,6 @@ fi
 
 # Make the workspace owned by the stack user
 sudo chown -R stack:stack $DEST
-
-if [ "$DEVSTACK_GATE_VIRT_DRIVER" == "openvz" ]; then
-   # Make sure stack is a member of the 'vz' group
-   sudo usermod -a -G vz stack
-fi
 
 echo "Running devstack"
 sudo -H -u stack ./stack.sh
