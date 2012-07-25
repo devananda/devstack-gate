@@ -14,6 +14,11 @@ export JOB_NAME=test
 export BUILD_NUMBER=42
 export GERRIT_CHANGE_NUMBER=1234
 export GERRIT_PATCHSET_NUMBER=1
+<<<<<<< Updated upstream
+=======
+export DEVSTACK_GATE_VIRT_DRIVER=openvz
+export VIRT_DRIVER=openvz
+>>>>>>> Stashed changes
 EOF
 
 rsync -az --delete $WORKSPACE/ $NODE_IP_ADDR:workspace/
