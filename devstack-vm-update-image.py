@@ -218,7 +218,7 @@ def configure_server(server, branches):
         bn = os.path.basename(script)
         client.scp(script, '/tmp/%s' % bn)
         client.ssh('run custom script %s' % bn,
-            'chmod +x /tmp/%s && /tmp/%s' % (bn, bn))
+            'chmod +x /tmp/%s && sudo /tmp/%s' % (bn, bn))
 
     client.ssh('sync', 'sync && sleep 5')
 
